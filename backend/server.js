@@ -7,7 +7,11 @@ import jwt from "jsonwebtoken";
 const port = process.env.PORT || 3000;
 
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
 io.use((socket, next) => {
   try {
@@ -15,20 +19,20 @@ io.use((socket, next) => {
       socket.handshake.auth?.token ||
       socket.handshake.headers.authorization?.split(" ")[1];
 
-      if (!token) {
-        return next(new Error("Authentication error"));
-      }
+    if (!token) {
+      return next(new Error("Authentication error"));
+    }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      if (!decoded) {
-        return next(new Error("Authentication error"));
-      }
+    if (!decoded) {
+      return next(new Error("Authentication error"));
+    }
 
-      socket.user = decoded;``
+    socket.user = decoded;
+    ``;
 
-      next();
-
+    next();
   } catch (error) {
     next(error);
   }
