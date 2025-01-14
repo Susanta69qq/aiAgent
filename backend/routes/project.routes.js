@@ -5,8 +5,7 @@ import * as authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.post(
-  "/create",
+router.post("/create",
   authMiddleware.authUser,
   body("name").isString().withMessage("Name is required"),
   projectController.createProjectController
@@ -14,8 +13,7 @@ router.post(
 
 router.get("/all", authMiddleware.authUser, projectController.getAllProjects);
 
-router.put(
-  "/add-user",
+router.put("/add-user",
   authMiddleware.authUser,
   body("projectId").isString().withMessage("Project ID is required"),
   body("users")

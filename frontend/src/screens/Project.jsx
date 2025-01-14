@@ -1,24 +1,54 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import axios from "../config/axios";
 
 const Project = () => {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const location = useLocation();
   console.log(location.state);
 
-  const users = [
-    { id: 1, name: "User One" },
-    { id: 2, name: "User Two" },
-    { id: 3, name: "User Three" },
-  ];
-
   const handleUserClick = (id) => {
-    setSelectedUserId([...selectedUserId, id]);
-    // setIsModalOpen(false);
+    setSelectedUserId((prevSelectedUserId) => {
+      const newSelectedUserId = new Set(prevSelectedUserId);
+      if (newSelectedUserId.has(id)) {
+        newSelectedUserId.delete(id);
+      } else {
+        newSelectedUserId.add(id);
+      }
+
+      return newSelectedUserId;
+    });
   };
+
+  const addCollaborators = () => {
+    axios
+      .put("/projects/add-user", {
+        projectId: location.state.project._id,
+        users: Array.from(selectedUserId),
+      })
+      .then((res) => {
+        console.log(res.data);
+        setIsModalOpen(false);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    axios
+      .get("/users/all")
+      .then((res) => {
+        setUsers(res.data.users);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   return (
     <main className="h-screen w-screen flex">
@@ -97,15 +127,14 @@ const Project = () => {
             <div className="users-list flex flex-col gap-2 mb-16 max-h-96 overflow-auto">
               {users.map((user) => (
                 <div
-                  key={user.id}
-                  className={`user cursor-pointer hover: bg-slate-200
+                  key={user._id}
+                  className={`user cursor-pointer hover:bg-slate-200
                     ${
-                      selectedUserId.indexOf(user.id) != -1
+                      Array.from(selectedUserId).indexOf(user._id) != -1
                         ? "bg-slate-200"
                         : ""
-                    } p-2 flex gap-2 
-                            items-center`}
-                  onClick={() => handleUserClick(user.id)}
+                    } p-2 flex gap-2 items-center`}
+                  onClick={() => handleUserClick(user._id)}
                 >
                   <div
                     className="aspect-square relative rounded-full w-fit h-fit flex 
@@ -113,11 +142,12 @@ const Project = () => {
                   >
                     <i className="ri-user-fill absolute"></i>
                   </div>
-                  <h1 className="font-semibold text-lg">{user.name}</h1>
+                  <h1 className="font-semibold text-lg">{user.email}</h1>
                 </div>
               ))}
             </div>
             <button
+              onClick={addCollaborators}
               className="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 
                     bg-blue-600 text-white rounded-md"
             >

@@ -50,18 +50,18 @@ const Home = () => {
           <i className="ri-link ml-2"></i>
         </button>
 
-        {project.map((p) => (
+        {project.map((project) => (
           <div
             onClick={() => {
               navigate("/project", {
                 state: { project },
               });
             }}
-            key={p._id}
+            key={project._id}
             className="project flex flex-col gap-2 cursor-pointer p-4 border 
             border-slate-300 rounded-md min-w-52 hover:bg-slate-200"
           >
-            <h2 className="font-semibold">{p.name}</h2>
+            <h2 className="font-semibold">{project.name}</h2>
 
             <div className="flex gap-2">
               <p>
@@ -71,7 +71,7 @@ const Home = () => {
                 </small>{" "}
                 <small>Collaborators</small> :{" "}
               </p>
-              {p.users.length}
+              {project.users.length}
             </div>
           </div>
         ))}
