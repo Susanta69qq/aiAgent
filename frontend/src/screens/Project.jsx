@@ -104,6 +104,7 @@ const Project = () => {
     `;
 
     messageBox.appendChild(message);
+    scrollToBottom();
   };
 
   const appendOutgoingMessage = (messageObject) => {
@@ -127,6 +128,11 @@ const Project = () => {
     `;
 
     messageBox.appendChild(newMessage);
+    scrollToBottom();
+  }
+
+  const scrollToBottom = () => {
+    messageBox.current.scrollTop = messageBox.current.scrollHeight;
   }
 
   return (
