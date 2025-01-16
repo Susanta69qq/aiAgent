@@ -56,13 +56,12 @@ io.on("connection", (socket) => {
   socket.join(socket.roomId);
 
   socket.on("project-message", async (data) => {
-
     const message = data.message;
-    
+
     const aiIsPresentInMessage = message.includes("@ai");
+    socket.broadcast.to(socket.roomId).emit("project-message", data);
 
     if (aiIsPresentInMessage) {
-
       const prompt = message.replace("@ai", "");
 
       const result = await generateResult(prompt);
@@ -71,16 +70,12 @@ io.on("connection", (socket) => {
         message: result,
         sender: {
           _id: "ai",
-          email: "AI"
-        }
-      })
+          email: "AI",
+        },
+      });
 
-      return 
+      return;
     }
-
-    socket.broadcast.to(socket.roomId).emit("project-message", {
-
-    });
   });
 
   socket.on("disconnect", () => {
