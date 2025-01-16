@@ -7,6 +7,7 @@ import {
   sendMessage,
 } from "../config/socket";
 import { UserContext } from "../context/user.context";
+import Markdown from "markdown-to-jsx";
 
 const Project = () => {
   const location = useLocation();
@@ -17,7 +18,11 @@ const Project = () => {
   const [users, setUsers] = useState([]);
   const [project, setProject] = useState(location.state.project);
   const [message, setMessage] = useState("");
+
+  const [messages, setMessages] = useState([]);
+
   const { user } = useContext(UserContext);
+
   const messageBox = useRef(null);
 
   const handleUserClick = (id) => {
@@ -51,10 +56,10 @@ const Project = () => {
   const send = () => {
     sendMessage("project-message", {
       message,
-      sender: user
+      sender: user,
     });
 
-    appendOutgoingMessage(message)
+    setMessages((prevMessages) => [...prevMessages, { sender: user, message }]);
 
     setMessage("");
   };
@@ -64,7 +69,7 @@ const Project = () => {
 
     receiveMessage("project-message", (data) => {
       console.log(data);
-      appendIncomingMessage(data);
+      setMessages((prevMessages) => [...prevMessages, data]);
     });
 
     axios
@@ -83,57 +88,14 @@ const Project = () => {
       });
   }, []);
 
-  const appendIncomingMessage = (messageObject) => {
-
-    const messageBox = document.querySelector(".message-box");
-    
-    const message = document.createElement("div");
-    message.classList.add(
-      "message",
-      "max-w-56",
-      "flex",
-      "flex-col",
-      "p-2",
-      "bg-slate-50",
-      "w-fit",
-      "rounded-md"
-    );
-    message.innerHTML = `
-      <small class="opacity-65 text-xs">${messageObject.sender.email}</small>
-      <p class="text-sm">${messageObject.message}</p>
-    `;
-
-    messageBox.appendChild(message);
-    scrollToBottom();
-  };
-
-  const appendOutgoingMessage = (messageObject) => {
-
-    const messageBox = document.querySelector(".message-box");
-
-    const newMessage = document.createElement("div");
-    newMessage.classList.add(
-      "ml-auto",
-      "max-w-56",
-      "flex",
-      "flex-col",
-      "p-2",
-      "bg-slate-50",
-      "w-fit",
-      "rounded-md"
-    );
-    newMessage.innerHTML = `
-      <small class="opacity-65 text-xs">${messageObject.sender.email}</small>
-      <p class="text-sm">${messageObject.message}</p>
-    `;
-
-    messageBox.appendChild(newMessage);
-    scrollToBottom();
-  }
-
   const scrollToBottom = () => {
     messageBox.current.scrollTop = messageBox.current.scrollHeight;
-  }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+  
 
   return (
     <main className="h-screen w-screen flex">
@@ -153,13 +115,31 @@ const Project = () => {
         </header>
 
         <div className="conversation-area pt-14 pb-10 flex-grow flex flex-col h-full relative">
-          
-            <div
-              ref={messageBox}
-              className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full"
-            >
-            </div>
-         
+          <div
+            ref={messageBox}
+            className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full"
+          >
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`${
+                  msg.sender._id === "ai" ? "max-w-80" : "max-w-52"
+                } 
+              ${msg.sender._id == user._id.toString() && "ml-auto"} 
+              message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}
+              >
+                <small className="opacity-65 text-xs">{msg.sender.email}</small>
+                <div className="text-sm overflow-auto">
+                  {msg.sender._id === "ai" ? (
+                    <Markdown>{msg.message}</Markdown>
+                  ) : (
+                    <p className="text-sm">{msg.message}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="inputField w-full flex absolute bottom-0">
             <input
               onChange={(e) => setMessage(e.target.value)}
@@ -188,10 +168,10 @@ const Project = () => {
 
           <div className="users flex flex-col gap-2">
             {project.users &&
-              project.users.map((user) => {
+              project.users.map((user, index) => {
                 return (
                   <div
-                    key={user}
+                    key={index}
                     className="user cursor-pointer hover:bg-slate-200 p-2 flex gap-2 items-center"
                   >
                     <div
