@@ -8,6 +8,22 @@ import {
 } from "../config/socket";
 import { UserContext } from "../context/user.context";
 import Markdown from "markdown-to-jsx";
+import hljs from 'highlight.js';
+
+function SyntaxHighlightedCode(props) {
+  const ref = useRef(null);
+
+  React.useEffect(() => {
+    if (ref.current && props.className?.includes("lang-") && window.hljs) {
+      window.hljs.highlightElement(ref.current);
+
+      // hljs won't reprocess the element unless this attribute is removed
+      ref.current.removeAttribute("data-highlighted");
+    }
+  }, [props.className, props.children]);
+
+  return <code {...props} ref={ref} />;
+}
 
 const Project = () => {
   const location = useLocation();
@@ -64,6 +80,23 @@ const Project = () => {
     setMessage("");
   };
 
+  const writeAiMessage = (message) => {
+    const messageObject = JSON.parse(message);
+
+    return (
+      <div className="overflow-auto bg-slate-950 text-white rounded-sm p-2">
+        <Markdown
+          children={messageObject.text}
+          options={{
+            overrides: {
+              code: SyntaxHighlightedCode,
+            },
+          }}
+        />
+      </div>
+    );
+  };
+
   useEffect(() => {
     initializeSocket(project._id);
 
@@ -95,7 +128,6 @@ const Project = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
 
   return (
     <main className="h-screen w-screen flex">
@@ -131,9 +163,9 @@ const Project = () => {
                 <small className="opacity-65 text-xs">{msg.sender.email}</small>
                 <div className="text-sm overflow-auto">
                   {msg.sender._id === "ai" ? (
-                    <Markdown>{msg.message}</Markdown>
+                    writeAiMessage(msg.message)
                   ) : (
-                    <p className="text-sm">{msg.message}</p>
+                    <p>{msg.message}</p>
                   )}
                 </div>
               </div>
