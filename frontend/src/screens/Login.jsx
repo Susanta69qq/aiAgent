@@ -19,7 +19,6 @@ const Login = () => {
         password,
       })
       .then((res) => {
-        console.log(res.data);
         localStorage.setItem("userToken", res.data.userToken);
         setUser(res.data.user);
         navigate("/");

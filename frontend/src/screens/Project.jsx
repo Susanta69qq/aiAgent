@@ -36,6 +36,9 @@ const Project = () => {
   const [message, setMessage] = useState("");
 
   const [messages, setMessages] = useState([]);
+  const [fileTree, setFileTree] = useState({
+
+  })
 
   const { user } = useContext(UserContext);
 
@@ -219,6 +222,22 @@ const Project = () => {
               })}
           </div>
         </div>
+      </section>
+
+      <section className="right bg-red-50 flex-grow h-full flex">
+
+              <div className="explorer h-full max-w-64 min-w-52 bg-slate-200">
+                <div className="file-tree w-full">
+                  <div className="tree-element cursor-pointer p-2 px-4 flex items-center gap-2 bg-slate-300 w-full">
+                    <p
+                    className="font-semibold text-lg"
+                    >app.js</p>
+                  </div>
+                </div>
+              </div>
+              <div className="code-editor">
+                
+              </div>
       </section>
 
       {isModalOpen && (
