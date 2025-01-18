@@ -8,7 +8,7 @@ import {
 } from "../config/socket";
 import { UserContext } from "../context/user.context";
 import Markdown from "markdown-to-jsx";
-import hljs from 'highlight.js';
+import hljs from "highlight.js";
 
 function SyntaxHighlightedCode(props) {
   const ref = useRef(null);
@@ -36,9 +36,10 @@ const Project = () => {
   const [message, setMessage] = useState("");
 
   const [messages, setMessages] = useState([]);
-  const [fileTree, setFileTree] = useState({
+  const [fileTree, setFileTree] = useState({});
 
-  })
+  const [currentFile, setCurrentFile] = useState(null);
+  const [openFiles, setOpenFiles] = useState([])
 
   const { user } = useContext(UserContext);
 
@@ -104,7 +105,12 @@ const Project = () => {
     initializeSocket(project._id);
 
     receiveMessage("project-message", (data) => {
-      console.log(data);
+      const message = JSON.parse(data.message);
+
+      if (message.fileTree) {
+        setFileTree(message.fileTree);
+      }
+
       setMessages((prevMessages) => [...prevMessages, data]);
     });
 
@@ -225,19 +231,62 @@ const Project = () => {
       </section>
 
       <section className="right bg-red-50 flex-grow h-full flex">
+        <div className="explorer h-full max-w-64 min-w-52 bg-slate-200">
+          <div className="file-tree w-full">
+            {Object.keys(fileTree).map((file, index) => (
+              <button
+                key={index}
+                className="tree-element cusor-pointer p-2 hover:bg-slate-300"
+                onClick={() => {
+                  setCurrentFile(file);
+                  setOpenFiles([ ...new Set([ ...openFiles, file ]) ])
+                }}
+              >
+                <p className="font-semibold text-lg">{file}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {currentFile && (
+          <div className="code-editor flex flex-col flex-grow h-full">
 
-              <div className="explorer h-full max-w-64 min-w-52 bg-slate-200">
-                <div className="file-tree w-full">
-                  <div className="tree-element cursor-pointer p-2 px-4 flex items-center gap-2 bg-slate-300 w-full">
-                    <p
-                    className="font-semibold text-lg"
-                    >app.js</p>
-                  </div>
-                </div>
-              </div>
-              <div className="code-editor">
-                
-              </div>
+          <div className="top flex">
+            {
+              openFiles.map((file, index) => (
+                <button
+                  key={index}
+                  className={`open-file cursor-pointer p-2 px-4 flex items-center w-fit gap-2 bg-slate-300 
+                    ${currentFile === file ? 'bg-slate-400' : ''}`}
+                  onClick={() => {
+                    setCurrentFile(file);
+                  }}
+                >
+                  <p className="font-semibold text-lg">{file}</p>
+                </button>
+              ))
+            }
+          </div>
+
+          <div className="bottom flex flex-grow">
+            {
+              fileTree[currentFile] && (
+                <textarea 
+                value={fileTree[currentFile]}
+                onChange={(e) => {
+                  setFileTree({...fileTree, [currentFile]: e.target.value});
+                }}
+                className="w-full h-full p-4 bg-slate-50 outline-none"
+                >
+
+                </textarea>
+              )
+            }
+          </div>
+
+        </div>
+        )}
+
       </section>
 
       {isModalOpen && (
