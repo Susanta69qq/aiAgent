@@ -9,6 +9,7 @@ import {
 import { UserContext } from "../context/user.context";
 import Markdown from "markdown-to-jsx";
 import hljs from "highlight.js";
+import { getWebContainer } from "../config/webContainer";
 
 function SyntaxHighlightedCode(props) {
   const ref = useRef(null);
@@ -40,6 +41,8 @@ const Project = () => {
 
   const [currentFile, setCurrentFile] = useState(null);
   const [openFiles, setOpenFiles] = useState([]);
+
+  const [webContainer, setWebContainer] = useState(null)
 
   const { user } = useContext(UserContext);
 
@@ -103,6 +106,13 @@ const Project = () => {
 
   useEffect(() => {
     initializeSocket(project._id);
+
+    if (!webContainer) {
+      getWebContainer().then((container) => {
+        setWebContainer(container);
+        console.log("container started");
+      })
+    }
 
     receiveMessage("project-message", (data) => {
       
