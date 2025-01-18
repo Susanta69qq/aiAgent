@@ -1,4 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai"
+
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY);
 const model = genAI.getGenerativeModel({
@@ -101,7 +102,8 @@ const model = genAI.getGenerativeModel({
 });
 
 export const generateResult = async (prompt) => {
-  const result = await model.generateContent(prompt);
 
-  return JSON.stringify({ text: result.response.text() });
-};
+    const result = await model.generateContent(prompt);
+
+    return result.response.text()
+}

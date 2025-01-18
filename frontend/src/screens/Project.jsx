@@ -39,7 +39,7 @@ const Project = () => {
   const [fileTree, setFileTree] = useState({});
 
   const [currentFile, setCurrentFile] = useState(null);
-  const [openFiles, setOpenFiles] = useState([])
+  const [openFiles, setOpenFiles] = useState([]);
 
   const { user } = useContext(UserContext);
 
@@ -105,7 +105,9 @@ const Project = () => {
     initializeSocket(project._id);
 
     receiveMessage("project-message", (data) => {
+      
       const message = JSON.parse(data.message);
+      console.log(message);
 
       if (message.fileTree) {
         setFileTree(message.fileTree);
@@ -236,10 +238,10 @@ const Project = () => {
             {Object.keys(fileTree).map((file, index) => (
               <button
                 key={index}
-                className="tree-element cusor-pointer p-2 hover:bg-slate-300"
+                className="tree-element cusor-pointer p-2 px-4 flex items-center gap-2 bg-slate-300 w-full"
                 onClick={() => {
                   setCurrentFile(file);
-                  setOpenFiles([ ...new Set([ ...openFiles, file ]) ])
+                  setOpenFiles([...new Set([...openFiles, file])]);
                 }}
               >
                 <p className="font-semibold text-lg">{file}</p>
@@ -247,46 +249,63 @@ const Project = () => {
             ))}
           </div>
         </div>
-        
+
         {currentFile && (
           <div className="code-editor flex flex-col flex-grow h-full">
-
-          <div className="top flex">
-            {
-              openFiles.map((file, index) => (
+            <div className="top flex">
+              {openFiles.map((file, index) => (
                 <button
                   key={index}
                   className={`open-file cursor-pointer p-2 px-4 flex items-center w-fit gap-2 bg-slate-300 
-                    ${currentFile === file ? 'bg-slate-400' : ''}`}
+                    ${currentFile === file ? "bg-slate-400" : ""}`}
                   onClick={() => {
                     setCurrentFile(file);
                   }}
                 >
                   <p className="font-semibold text-lg">{file}</p>
                 </button>
-              ))
-            }
+              ))}
+            </div>
+
+            <div className="bottom flex flex-grow">
+              {fileTree[currentFile] && (
+                <div className="code-editor-area h-full overflow-auto flex-grow bg-slate-50">
+                  <pre className="hljs h-full">
+                    <code
+                      className="hljs h-full outline-none"
+                      contentEditable
+                      suppressContentEditableWarning
+                      onBlur={(e) => {
+                        const updatedContent = e.target.innerText;
+                        const ft = {
+                          ...fileTree,
+                          [currentFile]: {
+                            file: {
+                              contents: updatedContent,
+                            },
+                          },
+                        };
+                        setFileTree(ft);
+                        saveFileTree(ft);
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: hljs.highlight(
+                          "javascript",
+                          fileTree[currentFile].file.contents
+                        ).value,
+                      }}
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        paddingBottom: "25rem",
+                        counterSet: "line-numbering",
+                      }}
+                    />
+                  </pre>
+                </div>
+              )}
+            </div>
           </div>
-
-          <div className="bottom flex flex-grow">
-            {
-              fileTree[currentFile] && (
-                <textarea 
-                value={fileTree[currentFile]}
-                onChange={(e) => {
-                  setFileTree({...fileTree, [currentFile]: e.target.value});
-                }}
-                className="w-full h-full p-4 bg-slate-50 outline-none"
-                >
-
-                </textarea>
-              )
-            }
-          </div>
-
-        </div>
         )}
-
       </section>
 
       {isModalOpen && (
