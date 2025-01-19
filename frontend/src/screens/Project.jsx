@@ -42,7 +42,7 @@ const Project = () => {
   const [currentFile, setCurrentFile] = useState(null);
   const [openFiles, setOpenFiles] = useState([]);
 
-  const [webContainer, setWebContainer] = useState(null)
+  const [webContainer, setWebContainer] = useState(null);
 
   const { user } = useContext(UserContext);
 
@@ -111,13 +111,14 @@ const Project = () => {
       getWebContainer().then((container) => {
         setWebContainer(container);
         console.log("container started");
-      })
+      });
     }
 
     receiveMessage("project-message", (data) => {
-      
       const message = JSON.parse(data.message);
       console.log(message);
+
+      webContainer?.mount(message.fileTree)
 
       if (message.fileTree) {
         setFileTree(message.fileTree);
