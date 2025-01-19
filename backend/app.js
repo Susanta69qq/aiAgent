@@ -17,8 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors());
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.get("/health", (req, res) => {
+  res.send("Ok!");
 });
 
 app.use("/users", userRoutes);
