@@ -128,9 +128,9 @@ const Project = () => {
           setFileTree(message.fileTree || {});
           saveFileTree(message.fileTree);
         }
-        setMessages((prevMessages) => [...prevMessages, data]); // Update messages state
+        setMessages((prevMessages) => [...prevMessages, data]);
       } else {
-        setMessages((prevMessages) => [...prevMessages, data]); // Update messages state
+        setMessages((prevMessages) => [...prevMessages, data]);
       }
     });
 
