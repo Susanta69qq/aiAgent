@@ -5,7 +5,8 @@ import * as authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.post("/create",
+router.post(
+  "/create",
   authMiddleware.authUser,
   body("name").isString().withMessage("Name is required"),
   projectController.createProjectController
@@ -13,7 +14,8 @@ router.post("/create",
 
 router.get("/all", authMiddleware.authUser, projectController.getAllProjects);
 
-router.put("/add-user",
+router.put(
+  "/add-user",
   authMiddleware.authUser,
   body("projectId").isString().withMessage("Project ID is required"),
   body("users")
@@ -25,10 +27,18 @@ router.put("/add-user",
   projectController.addUserToProject
 );
 
-router.get("/get-project/:projectId", 
+router.get(
+  "/get-project/:projectId",
   authMiddleware.authUser,
   projectController.getProjectById
-)
+);
 
+router.put(
+  "/update-file-tree",
+  authMiddleware.authUser,
+  body("projectId").isString().withMessage("Project ID is required"),
+  body("fileTree").isObject().withMessage("File tree is required"),
+  projectController.updateFileTree
+);
 
 export default router;

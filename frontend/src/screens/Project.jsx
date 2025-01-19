@@ -117,22 +117,28 @@ const Project = () => {
     }
 
     receiveMessage("project-message", (data) => {
-      const message = JSON.parse(data.message);
-      console.log(message);
+      if (data.sender._id == "ai") {
+        const message = JSON.parse(data.message);
 
-      webContainer?.mount(message.fileTree);
+        console.log(message);
 
-      if (message.fileTree) {
-        setFileTree(message.fileTree);
+        webContainer?.mount(message.fileTree);
+
+        if (message.fileTree) {
+          setFileTree(message.fileTree || {});
+          saveFileTree(message.fileTree);
+        }
+        setMessages((prevMessages) => [...prevMessages, data]); // Update messages state
+      } else {
+        setMessages((prevMessages) => [...prevMessages, data]); // Update messages state
       }
-
-      setMessages((prevMessages) => [...prevMessages, data]);
     });
 
     axios
       .get(`/projects/get-project/${location.state.project._id}`)
       .then((res) => {
         setProject(res.data.project);
+        setFileTree(res.data.project.fileTree);
       });
 
     axios
@@ -144,6 +150,21 @@ const Project = () => {
         console.log(err);
       });
   }, []);
+
+  function saveFileTree(ft) {
+    console.log("Saving file tree:", ft);
+    axios
+      .put("/projects/update-file-tree", {
+        projectId: project._id,
+        fileTree: ft,
+      })
+      .then((res) => {
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.log("Error saving file tree:", err);
+      });
+  }
 
   const scrollToBottom = () => {
     messageBox.current.scrollTop = messageBox.current.scrollHeight;
