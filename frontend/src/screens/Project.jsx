@@ -192,6 +192,35 @@ const Project = () => {
       });
   }
 
+  const clearFileTree = () => {
+    // Stop the running webContainer process if it exists at all
+    if (runProcess) {
+      runProcess.kill();
+      setRunProcess(null);
+      console.log("WebContainer process stopped");
+    }
+
+    //clear the file tree and reset related states
+    setFileTree({});
+    setCurrentFile(null);
+    setOpenFiles([]);
+
+    //close the webContainer window
+    setIframeUrl(null);
+
+    axios
+      .put("/projects/update-file-tree", {
+        projectId: project._id,
+        fileTree: {},
+      })
+      .then((res) => {
+        console.log("File tree cleared", res.data);
+      })
+      .catch((err) => {
+        console.error("Error clearing file tree:", err);
+      });
+  };
+
   const scrollToBottom = () => {
     messageBox.current.scrollTop = messageBox.current.scrollHeight;
   };
@@ -212,6 +241,13 @@ const Project = () => {
           >
             <i className="ri-add-fill mr-1"></i>
             <p>Add Collaborators</p>
+          </button>
+
+          <button
+            onClick={clearFileTree}
+            className="p-2 bg-red-500 text-white rounded-md font-medium"
+          >
+            clear code
           </button>
 
           <button
@@ -317,67 +353,87 @@ const Project = () => {
         </div>
 
         <div className="code-editor flex flex-col flex-grow h-full">
-          <div className="top flex justify-between w-full">
-            <div className="files flex">
-              {openFiles.map((file, index) => (
-                <button
-                  key={index}
-                  className={`open-file cursor-pointer p-2 px-4 flex items-center w-fit gap-2 bg-slate-300 
+          {Object.keys(fileTree).length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full px-4 gap-8">
+              <h3 className="text-black text-sm  font-medium">
+                Give <span className="font-bold text-gray-600">AICA</span>{" "}
+                prompts starting with{" "}
+                <span className="text-xs font-bold text-blue-600">@ai</span> to
+                interact with your personal ai agent
+              </h3>
+              <h3 className="text-black text-sm  font-medium">
+                You can also run your{" "}
+                <span className="text-xs font-bold text-blue-600">@ai</span>{" "}
+                generated code in a virtual IDE just press run twice
+              </h3>
+              <h3 className="text-black text-sm  font-medium">
+                Chat and interact with your team members. NOTE: Your AI
+                responses would also be available to your projects members.
+              </h3>
+            </div>
+          ) : (
+            <div className="top flex justify-between w-full">
+              <div className="files flex">
+                {openFiles.map((file, index) => (
+                  <button
+                    key={index}
+                    className={`open-file cursor-pointer p-2 px-4 flex items-center w-fit gap-2 bg-slate-300 
                     ${currentFile === file ? "bg-slate-400" : ""}`}
-                  onClick={() => {
-                    setCurrentFile(file);
+                    onClick={() => {
+                      setCurrentFile(file);
+                    }}
+                  >
+                    <p className="font-semibold text-lg">{file}</p>
+                  </button>
+                ))}
+              </div>
+              <div className="actions flex gap-2">
+                <button
+                  onClick={async () => {
+                    await webContainer.mount(fileTree);
+
+                    const installProcess = await webContainer?.spawn("npm", [
+                      "install",
+                    ]);
+
+                    installProcess.output.pipeTo(
+                      new WritableStream({
+                        write(chunk) {
+                          console.log(chunk);
+                        },
+                      })
+                    );
+
+                    if (runProcess) {
+                      runProcess.kill();
+                    }
+
+                    let tempRunProcess = await webContainer?.spawn("npm", [
+                      "start",
+                    ]);
+
+                    tempRunProcess.output.pipeTo(
+                      new WritableStream({
+                        write(chunk) {
+                          console.log(chunk);
+                        },
+                      })
+                    );
+
+                    setRunProcess(tempRunProcess);
+
+                    webContainer?.on("server-ready", (port, url) => {
+                      console.log(port, url);
+                      setIframeUrl(url);
+                    });
                   }}
+                  className="p-2 px-4 bg-slate-300 text-black font-semibold"
                 >
-                  <p className="font-semibold text-lg">{file}</p>
+                  run
                 </button>
-              ))}
+              </div>
             </div>
-            <div className="actions flex gap-2">
-              <button
-                onClick={async () => {
-                  await webContainer.mount(fileTree);
-
-                  const installProcess = await webContainer?.spawn("npm", [
-                    "install",
-                  ]);
-
-                  installProcess.output.pipeTo(
-                    new WritableStream({
-                      write(chunk) {
-                        console.log(chunk);
-                      },
-                    })
-                  );
-
-                  if (runProcess) {
-                    runProcess.kill();
-                  }
-
-                  let tempRunProcess = await webContainer?.spawn("npm", [
-                    "start",
-                  ]);
-
-                  tempRunProcess.output.pipeTo(
-                    new WritableStream({
-                      write(chunk) {
-                        console.log(chunk);
-                      },
-                    })
-                  );
-
-                  setRunProcess(tempRunProcess);
-
-                  webContainer?.on("server-ready", (port, url) => {
-                    console.log(port, url);
-                    setIframeUrl(url);
-                  });
-                }}
-                className="p-2 px-4 bg-slate-300 text-black font-semibold"
-              >
-                run
-              </button>
-            </div>
-          </div>
+          )}
 
           <div className="bottom flex flex-grow">
             {fileTree[currentFile] && (
