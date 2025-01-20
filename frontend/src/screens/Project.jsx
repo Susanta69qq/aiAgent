@@ -89,22 +89,49 @@ const Project = () => {
     setMessage("");
   };
 
+  const renderContent = (content) => {
+    if (typeof content === "string") {
+      return <p>{content}</p>;
+    } else if (Array.isArray(content)) {
+      return (
+        <ul className="list-disc pl-5">
+          {content.map((item, index) => (
+            <li key={index}>{renderContent(item)}</li>
+          ))}
+        </ul>
+      );
+    } else if (typeof content === "object" && content !== null) {
+      return (
+        <div className="mt-2">
+          {Object.entries(content).map(([key, value], index) => (
+            <div key={index} className="mb-2">
+              <strong>{key.replace("_", " ").toUpperCase()}: </strong>
+              {renderContent(value)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return <p>Unsupported content type</p>;
+  };
+  
   const writeAiMessage = (message) => {
-    const messageObject = JSON.parse(message);
-
+    let messageObject;
+  
+    try {
+      messageObject = JSON.parse(message);
+    } catch (error) {
+      // If parsing fails, assume it's plain text
+      return <p>{message}</p>;
+    }
+  
     return (
       <div className="overflow-auto bg-slate-950 text-white rounded-sm p-2">
-        <Markdown
-          children={messageObject.text}
-          options={{
-            overrides: {
-              code: SyntaxHighlightedCode,
-            },
-          }}
-        />
+        {renderContent(messageObject)}
       </div>
     );
   };
+  
 
   useEffect(() => {
     initializeSocket(project._id);
@@ -269,7 +296,7 @@ const Project = () => {
       <section className="right bg-red-50 flex-grow h-full flex">
         <div className="explorer h-full max-w-64 min-w-52 bg-slate-200">
           <div className="file-tree w-full">
-          {fileTree && 
+            {fileTree &&
               Object.keys(fileTree).map((file, index) => (
                 <button
                   key={index}
