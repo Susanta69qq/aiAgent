@@ -341,7 +341,7 @@ const Project = () => {
                     setIframeUrl(url);
                   });
                 }}
-                className="p-2 px-4 bg-slate-300 text-white"
+                className="p-2 px-4 bg-slate-300 text-black font-semibold"
               >
                 run
               </button>
