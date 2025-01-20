@@ -114,24 +114,23 @@ const Project = () => {
     }
     return <p>Unsupported content type</p>;
   };
-  
+
   const writeAiMessage = (message) => {
     let messageObject;
-  
+
     try {
       messageObject = JSON.parse(message);
     } catch (error) {
       // If parsing fails, assume it's plain text
       return <p>{message}</p>;
     }
-  
+
     return (
       <div className="overflow-auto bg-slate-950 text-white rounded-sm p-2">
         {renderContent(messageObject)}
       </div>
     );
   };
-  
 
   useEffect(() => {
     initializeSocket(project._id);
@@ -204,8 +203,13 @@ const Project = () => {
   return (
     <main className="h-screen w-screen flex">
       <section className="left relative flex flex-col h-screen min-w-96 bg-slate-300">
-        <header className="flex justify-between items-center p-2 px-4 w-full bg-slate-100 absolute top-0">
-          <button className="flex gap-2" onClick={() => setIsModalOpen(true)}>
+        <header className="flex justify-between items-center p-2 px-4 w-full bg-slate-100 absolute top-0 z-10">
+          <button
+            className="flex gap-2"
+            onClick={() => {
+              setIsModalOpen(true);
+            }}
+          >
             <i className="ri-add-fill mr-1"></i>
             <p>Add Collaborators</p>
           </button>
@@ -431,7 +435,7 @@ const Project = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-4 rounde-md w-96 max-w-full relative">
+          <div className="bg-white p-4 rounded-md w-96 max-w-full relative">
             <header className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Select User</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-2">
