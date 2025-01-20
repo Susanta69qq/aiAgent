@@ -138,7 +138,7 @@ const Project = () => {
       .get(`/projects/get-project/${location.state.project._id}`)
       .then((res) => {
         setProject(res.data.project);
-        setFileTree(res.data.project.fileTree);
+        setFileTree(res.data.project.fileTree || {});
       });
 
     axios
@@ -269,18 +269,19 @@ const Project = () => {
       <section className="right bg-red-50 flex-grow h-full flex">
         <div className="explorer h-full max-w-64 min-w-52 bg-slate-200">
           <div className="file-tree w-full">
-            {Object.keys(fileTree).map((file, index) => (
-              <button
-                key={index}
-                className="tree-element cusor-pointer p-2 px-4 flex items-center gap-2 bg-slate-300 w-full"
-                onClick={() => {
-                  setCurrentFile(file);
-                  setOpenFiles([...new Set([...openFiles, file])]);
-                }}
-              >
-                <p className="font-semibold text-lg">{file}</p>
-              </button>
-            ))}
+          {fileTree && 
+              Object.keys(fileTree).map((file, index) => (
+                <button
+                  key={index}
+                  className="tree-element cursor-pointer p-2 px-4 flex items-center gap-2 bg-slate-300 w-full"
+                  onClick={() => {
+                    setCurrentFile(file);
+                    setOpenFiles([...new Set([...openFiles, file])]);
+                  }}
+                >
+                  <p className="font-semibold text-lg">{file}</p>
+                </button>
+              ))}
           </div>
         </div>
 
